@@ -2,30 +2,36 @@ package main
 
 import (
 	"bufio"
-	"fmt"
-	"os"
 	"context"
+	"fmt"
 	"log"
+	"os"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgconn"
-
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 
 	//connect to database
-	dbpool, ctx := connectDB()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// Использование переменной окружения DATABASE_URL
+	connStr := os.Getenv("DATABASE_URL")
+	dbpool, ctx := connectDB(connStr)
 	defer dbpool.Close()
 
 	scanner := bufio.NewScanner(os.Stdin)
-	var err error
 	for {
 		fmt.Println("Choose an option to make: \n(show, add, edit, delete, find, refreshID)")
 		scanner.Scan()
 		input := scanner.Text()
-	
+
 		switch input {
 		case "show":
 			err = show(dbpool, ctx)
@@ -41,11 +47,11 @@ func main() {
 		default:
 			fmt.Println("It seems like u missed the letter. Try again \n(show, add, edit, delete, find)")
 		}
-	}	
+	}
 
 }
 
-func show(dbpool *pgxpool.Pool, ctx context.Context) error{
+func show(dbpool *pgxpool.Pool, ctx context.Context) error {
 	var name, email string
 	var id int
 	var date_registered time.Time
@@ -55,8 +61,8 @@ func show(dbpool *pgxpool.Pool, ctx context.Context) error{
 
 	fmt.Printf("\n\n%-4s | %-15s | %-25s | %-26s\n", "id", "name", "email", "date_registered")
 	fmt.Println("-----+-----------------+---------------------------+--------------------------------------")
-	for rows.Next(){
-		err = rows.Scan(&id,&name,&email,&date_registered)
+	for rows.Next() {
+		err = rows.Scan(&id, &name, &email, &date_registered)
 		Check(err)
 		fmt.Printf("%-4d | %-15s | %-25s | %-26s\n", id, name, email, date_registered)
 	}
@@ -64,7 +70,7 @@ func show(dbpool *pgxpool.Pool, ctx context.Context) error{
 	return nil
 }
 
-func add(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner){
+func add(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner) {
 	var name, email string
 	fmt.Println("Full name of new user:")
 	scanner.Scan()
@@ -82,7 +88,7 @@ func add(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner){
 	fmt.Print("\nExecution was successfully completed\n\n")
 }
 
-func edit(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner){
+func edit(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner) {
 	var id, content, fieldName string
 	fmt.Print("\nEnter the ID of the user you want to update: ")
 	scanner.Scan()
@@ -103,7 +109,7 @@ func edit(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner){
 	fmt.Printf("\n%s was succesfully edited!!!\n\n", fieldName)
 }
 
-func delete(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner){
+func delete(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner) {
 	fmt.Println("Enter id of row that you want to delete:")
 	scanner.Scan()
 	id := scanner.Text()
@@ -114,7 +120,7 @@ func delete(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner){
 	fmt.Println("Row was succesfully deleted", "", "")
 }
 
-func find(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner){
+func find(dbpool *pgxpool.Pool, ctx context.Context, scanner *bufio.Scanner) {
 	fmt.Print("\nWhich field would you like to use to find the client? (name or email): ")
 	scanner.Scan()
 	fieldName := scanner.Text()
@@ -149,9 +155,8 @@ func refreshID(dbpool *pgxpool.Pool, ctx context.Context) {
 	Check(err)
 }
 
-func connectDB() (*pgxpool.Pool, context.Context) {
+func connectDB(connStr string) (*pgxpool.Pool, context.Context) {
 	ctx := context.Background()
-	connStr := "postgres://stormside7:MrVladPro2008@localhost:5432/stormside7"
 
 	dbpool, err := pgxpool.New(ctx, connStr)
 	Check(err)
@@ -159,8 +164,8 @@ func connectDB() (*pgxpool.Pool, context.Context) {
 	return dbpool, ctx
 }
 
-func Check(err error){
-	if err != nil{
+func Check(err error) {
+	if err != nil {
 		log.Fatal(err)
 	}
 }
@@ -169,7 +174,7 @@ func validateField(whereEdit string) {
 		"name":  true,
 		"email": true,
 	}
-	if !validFields[whereEdit]{
+	if !validFields[whereEdit] {
 		log.Fatalf("Недопустимое поле для изменения: %s", whereEdit)
 	}
 }
