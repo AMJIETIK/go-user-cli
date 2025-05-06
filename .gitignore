@@ -1,3 +1,6 @@
+# Database credentials file
+password.env
+
 # Go binary
 *.exe
 *.out
@@ -9,6 +12,3 @@
 
 # OS-specific files
 .DS_Store
-
-# Database credentials file
-.env
