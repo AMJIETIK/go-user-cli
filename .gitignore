@@ -1,0 +1,14 @@
+# Go binary
+*.exe
+*.out
+*.test
+
+# IDE files
+.idea/
+.vscode/
+
+# OS-specific files
+.DS_Store
+
+# Database credentials file
+.env
