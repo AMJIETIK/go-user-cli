@@ -178,6 +178,6 @@ func validateField(whereEdit string) {
 		"email": true,
 	}
 	if !validFields[whereEdit] {
-		log.Fatalf("Недопустимое поле для изменения: %s", whereEdit) // Invalid field for update: %s (Недопустимое поле для изменения: %s)
+		log.Fatalf("Invalid field for modification: %s", whereEdit) // Invalid field for update: %s (Недопустимое поле для изменения: %s)
 	}
 }
